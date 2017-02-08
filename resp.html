@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Test frontend</title>
+    <style>
+      body {
+        font-size: 40px;
+      }
+      .error {
+        color: red;
+      }
+      article.item {
+        font-size: 2em;
+        display: inline-block;
+        margin: 0 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="input">Ingrese un número: </label> 
+    <input id="numero" type="text" />
+    <button id="agregar">Agregar</button>
+    <button id="ordenar">Ordenar</button>
+    <br /><br /><br /><br />
+    <label id="error" class="error"></label>
+
+    <section id="wrapper"></section>
+
+    <script type="text/javascript">
+      // Unaccesible js form outside
+      (() => {
+        class Test {
+          constructor() {
+            this._values = [];
+            this.$numero = document.getElementById('numero');
+            this.$agregar = document.getElementById('agregar');
+            this.$ordenar = document.getElementById('ordenar');
+            this.$wrapper = document.getElementById('wrapper');
+            this.$error = document.getElementById('error');
+            this.init();
+          }
+
+          // Input Handling
+          clearInput() {
+            this.$numero.value = '';
+          }
+
+          // Error Handling
+          fireError(str) {
+            console.log('fire Error', str);
+            this.$error.innerHTML = str;
+            this.$error.style.display = 'inline-block';
+          }
+
+          clearError() {
+            this.$error.innerHTML = '';
+            this.$error.style.display = 'none';
+          }
+
+          // Renderer
+          updateValue(value) {
+            this._values.push(value);
+            this.$wrapper.innerHTML += '<article class="item">' + value + '</article>';
+          }
+
+          renderArray(array) {
+            this.$wrapper.innerHTML = '';
+            array.forEach(v =>  this.$wrapper.innerHTML += '<article class="item">' + v + '</article>');
+          }
+
+          // Validation Handling
+          validateNoRepeat(newVal) {
+            return this._values.find(v => v === newVal) ? false : true;
+          }
+
+          init() {
+            // Bind to context, not arrow in private method
+            this.$agregar.addEventListener('click', this.addNumber.bind(this));
+            this.$ordenar.addEventListener('click', this.sortAndAnimate.bind(this));
+          }
+
+          // Main Functions
+          addNumber() {
+            this.clearError();
+            const val = parseInt(this.$numero.value);
+            if (!val) return this.fireError('Ingrese un número valido');
+            if (!this.validateNoRepeat(val)) return this.fireError('Ingrese un número que no se repita');
+            this.updateValue(val);
+            this.clearInput();
+          }
+
+          sortAndAnimate() {
+            this.clearError();
+            if (this._values.length === 0) return this.fireError('Ingrese algun valor antes de ordenar');
+            // Immutability
+            const before = JSON.parse(JSON.stringify(this._values));
+            const after = JSON.parse(JSON.stringify(before.sort((a, d) => a > d )));
+            // TODO: animation
+            this.renderArray(after);
+          }
+
+        }
+        const test = new Test();
+      })();
+    </script>
+  </body>
+</html>
